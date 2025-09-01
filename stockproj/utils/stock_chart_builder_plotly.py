@@ -135,6 +135,7 @@ class StockChartBuilder:
         self.title = title or f"{symbol} - Biểu đồ giá ({interval})"
         self.fig: Optional[go.Figure] = None
         self._validated = False
+        self.traces = []
 
     # ------------- QUY TRÌNH CHÍNH -------------
     def build(self) -> go.Figure:
@@ -152,9 +153,15 @@ class StockChartBuilder:
             # không có volume -> full chiều cao cho y chính
             self.fig.update_layout(yaxis=dict(domain=[0.0, 1.0]))
         self.finalize_layout()
+
+        # Thêm các trace tuỳ chỉnh nếu có
+        for trace in self.traces:
+            self.fig.add_trace(trace)
+
         return self.fig
 
-    def render(self, use_container_width: bool = True):
+
+    def render(self):
         """
         Hiển thị figure trong Streamlit. Tự build nếu chưa có fig.
         """
@@ -286,12 +293,11 @@ class StockChartBuilder:
         return self
 
     # ------------- TIỆN ÍCH MỞ RỘNG -------------
-    def add_custom_trace(self, trace):
+    def add_custom_traces(self, trace):
         """
         Thêm trace tuỳ chỉnh (go.Scatter / go.Bar / ...).
         """
-        self._ensure_fig()
-        self.fig.add_trace(trace)
+        self.traces.append(trace)
         return self
 
     # Ví dụ skeleton mở rộng (chưa cài đặt):
@@ -341,3 +347,34 @@ def plot_chart(
     except ValueError:
         if return_fig:
             return None
+
+def builder_chart(
+    df: pd.DataFrame,
+    symbol: str,
+    interval: str,
+    ma_list: Optional[List[int]] = None,
+    show_volume: bool = True,
+    volume_method: str = "candle",
+    template: str = "plotly_white",
+    volume_opacity: float = 0.95,
+    title: Optional[str] = None,
+    return_fig: bool = False
+):
+    try:
+        builder = StockChartBuilder(
+            df=df,
+            symbol=symbol,
+            interval=interval,
+            ma_list=ma_list,
+            show_volume=show_volume,
+            volume_method=volume_method,
+            volume_opacity=volume_opacity,
+            template=template,
+            title=title
+        )
+        fig = builder.build()
+        return fig
+    except ValueError:
+        if return_fig:
+            return None
+

@@ -35,7 +35,7 @@ stockproj/
 
 
 ## 3. start
-..\venv\Scripts\activate
+venv\Scripts\activate
 streamlit run app.py
 
 ```bash

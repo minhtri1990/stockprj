@@ -13,8 +13,13 @@ from ultralytics import YOLO
 
 from utils.trend_detect import TrendDetector
 from utils.cached_stock_service import CachedStockService
-from utils.stock_chart_builder_plotly import plot_chart
 from utils.load_all_symbols import get_symbols
+
+from utils.stock_chart_builder_plotly import builder_chart
+from indicator.ART import plot_ATR
+from indicator.MACD import plot_MACD
+from indicator.RSI import plot_RSI
+from indicator.RSI_K_D import plot_stoch_RSI
 
 # ================================
 # Setup directories
@@ -171,6 +176,19 @@ if df_price is None or df_price.empty:
     st.warning("Không có dữ liệu.")
     st.stop()
 
-fig = plot_chart(df_price, symbol, interval, ma_options, show_volume=show_volume)
-
 # ================================
+fig_bar_chart = builder_chart(df_price, symbol, interval, ma_options, show_volume=show_volume)
+st.plotly_chart(fig_bar_chart, width='stretch')
+# Plot ATR chart
+fig_plot_ATR = plot_ATR(df_price)
+st.plotly_chart(fig_plot_ATR, width='stretch')
+# Plot RSI chart
+fig_RSI = plot_RSI(df_price)
+st.plotly_chart(fig_RSI, width='stretch')
+# Plot MACD chart
+fig_MACD = plot_MACD(df_price)
+st.plotly_chart(fig_MACD, width='stretch')
+# Plot Stochastic RSI chart
+fig_stoch_RSI = plot_stoch_RSI(df_price)
+st.plotly_chart(fig_stoch_RSI, width='stretch')
+
