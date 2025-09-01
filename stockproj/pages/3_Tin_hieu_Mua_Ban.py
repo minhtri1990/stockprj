@@ -6,7 +6,7 @@ from typing import List
 import plotly.graph_objects as go
 
 from utils.cached_stock_service import CachedStockService
-from utils.load_all_symbols import load_all_symbols
+from utils.load_all_symbols import get_symbols
 # TrendDetector là tùy chọn
 try:
     from utils.trend_detect import TrendDetector
@@ -16,12 +16,7 @@ except Exception:
 
 st.set_page_config(page_title="Tín hiệu Mua / Bán", page_icon="🟢", layout="wide")
 st.title("🟢🔴 Trang tín hiệu Mua / Bán cổ phiếu")
-
-# ---------------- Cache ----------------
-@st.cache_data(ttl=600, show_spinner=False)
-def get_symbols():
-    return load_all_symbols()
-
+# ================================
 @st.cache_data(ttl=60, show_spinner=True)
 def load_price_history(symbol: str, start: str, end: str, interval: str):
     svc = CachedStockService(symbol)

@@ -10,18 +10,17 @@ from PIL import Image
 import plotly.io as pio
 import pandas as pd
 from ultralytics import YOLO
-import cv2
 
 from utils.trend_detect import TrendDetector
 from utils.cached_stock_service import CachedStockService
 from utils.stock_chart_builder_plotly import plot_chart
-from utils.load_all_symbols import load_all_symbols
+from utils.load_all_symbols import get_symbols
 
 # ================================
 # Setup directories
 # ================================
 save_path = "./"
-screenshots_path = os.path.join(save_path, "screenshots")
+screenshots_path = os.path.join(save_path, "runs/screenshots/")
 detect_path = os.path.join(save_path, "runs/detect/")
 os.makedirs(save_path, exist_ok=True)
 os.makedirs(screenshots_path, exist_ok=True)
@@ -45,15 +44,7 @@ model.overrides['max_det'] = 1000  # maximum number of detections per image
 # Streamlit Setup
 # ================================
 st.set_page_config(page_title="VN Stock Viewer", page_icon="📈", layout="wide")
-st.title("📈 Biểu đồ  + Trend Detector")
-
-
-# ================================
-# Cache danh sách mã
-# ================================
-@st.cache_data(ttl=600, show_spinner=False)
-def get_symbols():
-    return load_all_symbols()
+st.title("📈 Biểu đồ")
 
 # ================================
 # Helpers
@@ -182,37 +173,4 @@ if df_price is None or df_price.empty:
 
 fig = plot_chart(df_price, symbol, interval, ma_options, show_volume=show_volume)
 
-
 # ================================
-# Export Chart as Image
-# ================================
-image_path = os.path.join(screenshots_path, f"{symbol}_chart.png")
-if st.button("Run Pattern Detection"):
-    try:
-        pio.write_image(fig, image_path, format="png")
-        #st.success(f"Biểu đồ đã được lưu: {image_path}")
-        #st.image(Image.open(image_path), caption="Exported Chart", use_column_width=True)
-    except ValueError:
-        st.error("Lỗi: Vui lòng cài đặt thư viện 'kaleido' bằng lệnh: pip install kaleido")
-
-    try:
-        results = model(image_path, save=True)
-        predict_path = results[0].save_dir if results else None
-
-        if predict_path and os.path.exists(predict_path):
-            annotated_images = sorted(glob.glob(os.path.join(predict_path, "*.jpg")), key=os.path.getmtime, reverse=True)
-            final_image_path = annotated_images[0] if annotated_images else image_path
-        else:
-            final_image_path = image_path
-
-        if results and results[0].boxes:
-            class_indices = results[0].boxes.cls.tolist()
-            predicted_label = classes[int(class_indices[0])]
-        else:
-            predicted_label = "No pattern detected"
-
-        st.image(Image.open(final_image_path), caption=f"Detected Patterns: {predicted_label}", use_column_width=True)
-        st.write(f"Predicted Label: {predicted_label}")
-
-    except Exception as e:
-        st.error(f"Lỗi khi chạy phát hiện mẫu: {e}")

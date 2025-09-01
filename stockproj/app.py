@@ -6,18 +6,10 @@ from pathlib import Path
 
 from utils.trend_detect import TrendDetector
 from utils.cached_stock_service import CachedStockService
-from utils.stock_chart_builder_plotly import StockChartBuilder 
-from utils.load_all_symbols import load_all_symbols
+from utils.stock_chart_builder_plotly import plot_chart 
+from utils.load_all_symbols import get_symbols
 
 st.set_page_config(page_title="VN Stock Viewer", page_icon="📈", layout="wide")
-st.title("📈 Biểu đồ cổ phiếu Việt Nam + Trend Detector")
-
-# ================================
-# Cache danh sách mã
-# ================================
-@st.cache_data(ttl=600, show_spinner=False)
-def get_symbols():
-    return load_all_symbols()
 
 # ================================
 # Helpers
@@ -86,53 +78,6 @@ def load_prices(symbol: str, start: str, end: str, interval: str, ma_list):
     df = df.loc[mask].reset_index(drop=True)
     return df
 
-def plot_chart(df, symbol, interval, ma_list=None, show_volume=True,
-               volume_method="candle", template="plotly_white",
-               volume_opacity=0.95, title=None, return_fig=False,
-               line_properties=None):
-    """
-    Plots the stock chart using the StockChartBuilder.
-
-    Parameters:
-        df (pd.DataFrame): DataFrame containing price data.
-        symbol (str): Stock symbol.
-        interval (str): Time interval (e.g., '1D', '1W', '1M').
-        ma_list (list): List of moving averages to include.
-        show_volume (bool): Whether to display volume.
-        volume_method (str): Method for displaying volume (e.g., 'candle').
-        template (str): Plotly template to use.
-        volume_opacity (float): Opacity for volume bars.
-        title (str): Title of the chart.
-        return_fig (bool): Whether to return the figure object.
-        line_properties (dict): Dictionary of line properties (e.g., color, dash, width).
-
-    Returns:
-        None or plotly.graph_objects.Figure: If return_fig is True, returns the figure object.
-    """
-    try:
-        builder = StockChartBuilder(
-            df=df,
-            symbol=symbol,
-            interval=interval,
-            ma_list=ma_list,
-            show_volume=show_volume,
-            volume_method=volume_method,
-            volume_opacity=volume_opacity,
-            template=template,
-            title=title
-        )
-        if line_properties:
-            # Apply line properties (e.g., color, dash, width) to the builder
-            builder.set_line_properties(line_properties)
-
-        fig = builder.build()
-        if return_fig:
-            return fig
-        builder.render()
-    except ValueError as e:
-        st.error(f"Lỗi khi tạo biểu đồ: {str(e)}")
-        if return_fig:
-            return None
 
 # ================================
 # Sidebar

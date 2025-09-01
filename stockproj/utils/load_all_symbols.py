@@ -39,6 +39,7 @@ import csv
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Tuple, Optional, Iterable, Set
+import streamlit as st
 
 # -------------------------------------------------
 # Cấu hình
@@ -168,6 +169,13 @@ def _write_symbols(path: Path, symbols: Iterable[str]) -> Tuple[bool, str]:
     except Exception as e:
         return False, f"Lỗi ghi file '{path}': {e}"
 
+
+# ================================
+# Cache danh sách mã
+# ================================
+@st.cache_data(ttl=600, show_spinner=False)
+def get_symbols():
+    return load_all_symbols()
 
 # -------------------------------------------------
 # Hàm chính
