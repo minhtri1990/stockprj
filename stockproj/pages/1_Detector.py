@@ -191,4 +191,3 @@ st.plotly_chart(fig_MACD, width='stretch')
 # Plot Stochastic RSI chart
 fig_stoch_RSI = plot_stoch_RSI(df_price)
 st.plotly_chart(fig_stoch_RSI, width='stretch')
-
